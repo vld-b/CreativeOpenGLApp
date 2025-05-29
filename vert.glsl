@@ -9,10 +9,12 @@ out vec2 texCoord;
 // Uniform (available from anywhere) scale variable
 uniform float scale;
 
+uniform mat4 model, view, proj;
+
 void main()
 {
 	// Scale the vertex position by the uniform scale factor
-	gl_Position = vec4(aPos.x * scale, aPos.y * scale, aPos.z * scale, 1.f);
+	gl_Position = proj * view * model * vec4(aPos * scale, 1.f);
 	color = aColor;
 	texCoord = aTex;
 }

@@ -3,6 +3,9 @@
 #include <GLFW/glfw3.h>
 #include <stb/stb_image.h>
 #include <vector>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "ShaderClass.h"
 #include "VAO.h"
@@ -13,24 +16,14 @@
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 720
 
-#ifdef _DEBUG
-#define GL_DEBUG(stmt) do { \
-stmt; \
-CheckOpenGLError(#stmt, __FILE__, __LINE__); \
-} while (0)
-
-#else
-#define GL_DEBUG(stmt) do {stmt; }
-
-#endif
-
 using std::vector;
 
 GLfloat verts[] = {
-	-0.5f, -0.5f, 0.0f, 0.3f, 0.4f, 0.7f, 0.f, 0.f,
-	-0.5f, 0.5f, 0.0f, 0.8f, 0.2f, 0.4f, 0.f, 1.f,
-	0.5f, 0.5f, 0.0f, 0.8f, 0.5f, 0.5f, 1.f, 1.f,
-	0.5f, -0.5f, 0.0f, 0.3f, 0.4f, 0.9f, 1.f, 0.f
+// Vertex Positions			Colors					Texture coords
+	-0.5f, -0.5f, 0.0f,		0.3f, 0.4f, 0.7f,		0.f, 0.f,
+	-0.5f, 0.5f, 0.0f,		0.8f, 0.2f, 0.4f,		0.f, 1.f,
+	0.5f, 0.5f, 0.0f,		0.8f, 0.5f, 0.5f,		1.f, 1.f,
+	0.5f, -0.5f, 0.0f,		0.3f, 0.4f, 0.9f,		1.f, 0.f
 };
 
 vector<GLuint> indices = {
@@ -99,12 +92,27 @@ int main() {
 		// Clear the color buffer
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		texture.Bind();
 		// Use the shader program
 		shader.Activate();
+
+		glm::mat4 model = glm::mat4(1.f);
+		glm::mat4 view = glm::mat4(1.f);
+		glm::mat4 proj = glm::mat4(1.f);
+		view = glm::translate(view, glm::vec3(0.f, -0.5f, -2.f));
+		proj = glm::perspective(glm::radians(45.f), (float)(WINDOW_WIDTH / WINDOW_HEIGHT), 0.1f, 100.f);
+
+		GLuint modelLoc = glGetUniformLocation(shader.ID, "model");
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		GLuint viewLoc = glGetUniformLocation(shader.ID, "view");
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+		GLuint projLoc = glGetUniformLocation(shader.ID, "proj");
+		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proj));
+
+
 		// Set uniform scale variable
-		glUniform1f(uniScale, 1.0f);
+		glUniform1f(uniScale, 1.f);
 		// Bind the Vertex Array Object so it can be worked with
+		texture.Bind();
 		vao.Bind();
 		// Draw the vertices using triangle mode, with the given indices
 		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
@@ -125,11 +133,4 @@ int main() {
 	glfwDestroyWindow(window);
 	glfwTerminate();
 	return 0;
-}
-
-void CheckOpenGLError(const char* stmt, const char* fname, int line) {
-	GLenum err = glGetError();
-	if (err != GL_NO_ERROR) {
-		std::cout << "OpenGL error %08x, at %s:%i - for %s\n" << err << fname << line << stmt << std::endl;
-	}
 }
