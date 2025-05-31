@@ -20,15 +20,20 @@ using std::vector;
 
 GLfloat verts[] = {
 // Vertex Positions			Colors					Texture coords
-	-0.5f, -0.5f, 0.0f,		0.3f, 0.4f, 0.7f,		0.f, 0.f,
-	-0.5f, 0.5f, 0.0f,		0.8f, 0.2f, 0.4f,		0.f, 1.f,
-	0.5f, 0.5f, 0.0f,		0.8f, 0.5f, 0.5f,		1.f, 1.f,
-	0.5f, -0.5f, 0.0f,		0.3f, 0.4f, 0.9f,		1.f, 0.f
+	-0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	0.f, 0.f,
+	-0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	0.f, 0.f,
+	 0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	0.f, 0.f,
+	 0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	0.f, 0.f,
+	 0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	1.f, 1.f
 };
 
-vector<GLuint> indices = {
-	0, 2, 1,
-	0, 3, 2
+GLuint indices[] = {
+	0, 1, 2,
+	0, 2, 3,
+	0, 1, 4,
+	1, 2, 4,
+	2, 3, 4,
+	3, 0, 4
 };
 
 int main() {
@@ -67,7 +72,7 @@ int main() {
 
 	// Create the VBO and EBO
 	VBO vbo(verts, sizeof(verts));
-	EBO ebo(indices.data(), sizeof(indices));
+	EBO ebo(indices, sizeof(indices));
 
 	// Link the VAO to the VBO, first the vertex positions and then the colors
 	vao.LinkAttrib(vbo, 0, 3, GL_FLOAT, 8 * sizeof(float), (void*)0);
@@ -85,19 +90,31 @@ int main() {
 	Texture texture("583-1024x1024.jpg", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGB, GL_UNSIGNED_BYTE, false);
 	texture.texUnit(shader, "tex", 0);
 
+	float rotation = 0.f;
+	float startTime = glfwGetTime();
+
+	glEnable(GL_DEPTH_TEST);
+
 	// Main loop to poll events and
 	while (!glfwWindowShouldClose(window)) {
 		// Clear the screen and apply new color
 		glClearColor(0.2f, 0.3f, 0.3f, 1.f);
 		// Clear the color buffer
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Use the shader program
 		shader.Activate();
 
+		float timeRN = glfwGetTime();
+		if (timeRN - startTime > 1 / 60) {
+			rotation += .5f;
+			startTime = timeRN;
+		}
+
 		glm::mat4 model = glm::mat4(1.f);
 		glm::mat4 view = glm::mat4(1.f);
 		glm::mat4 proj = glm::mat4(1.f);
+		model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.f, 1.f, 0.f));
 		view = glm::translate(view, glm::vec3(0.f, -0.5f, -2.f));
 		proj = glm::perspective(glm::radians(45.f), (float)(WINDOW_WIDTH / WINDOW_HEIGHT), 0.1f, 100.f);
 
@@ -115,7 +132,7 @@ int main() {
 		texture.Bind();
 		vao.Bind();
 		// Draw the vertices using triangle mode, with the given indices
-		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
 		// Swap the buffers to display creation
 		glfwSwapBuffers(window);
 
