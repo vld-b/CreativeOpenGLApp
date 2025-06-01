@@ -12,6 +12,7 @@
 #include "VBO.h"
 #include "EBO.h"
 #include "Texture.h"
+#include "Camera.h"
 
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 720
@@ -21,10 +22,10 @@ using std::vector;
 GLfloat verts[] = {
 // Vertex Positions			Colors					Texture coords
 	-0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	0.f, 0.f,
-	-0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	0.f, 0.f,
+	-0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	1.f, 0.f,
 	 0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	0.f, 0.f,
-	 0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	0.f, 0.f,
-	 0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	1.f, 1.f
+	 0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	1.f, 0.f,
+	 0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	.5f, 1.f
 };
 
 GLuint indices[] = {
@@ -87,47 +88,29 @@ int main() {
 
 	// Create texture and assign it to the uniform
 	stbi_set_flip_vertically_on_load(true); // Flip the texture vertically
-	Texture texture("583-1024x1024.jpg", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGB, GL_UNSIGNED_BYTE, false);
+	Texture texture("obama.jpg", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGB, GL_UNSIGNED_BYTE, false);
 	texture.texUnit(shader, "tex", 0);
 
-	float rotation = 0.f;
-	float startTime = glfwGetTime();
+	Camera camera(WINDOW_WIDTH, WINDOW_HEIGHT, vec3(0.f, 0.f, 2.f));
 
+	// Enable the depth buffer
 	glEnable(GL_DEPTH_TEST);
 
 	// Main loop to poll events and
 	while (!glfwWindowShouldClose(window)) {
+		float frameStartTime = glfwGetTime(); // For calculating deltaTime
 		// Clear the screen and apply new color
 		glClearColor(0.2f, 0.3f, 0.3f, 1.f);
-		// Clear the color buffer
+		// Clear the necessary buffers
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Use the shader program
 		shader.Activate();
 
-		float timeRN = glfwGetTime();
-		if (timeRN - startTime > 1 / 60) {
-			rotation += .5f;
-			startTime = timeRN;
-		}
+		// Handle the camera
+		camera.HandleInput(window);
+		camera.Matrix(45.f, 0.1f, 100.f, shader, "camMatrix");
 
-		glm::mat4 model = glm::mat4(1.f);
-		glm::mat4 view = glm::mat4(1.f);
-		glm::mat4 proj = glm::mat4(1.f);
-		model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.f, 1.f, 0.f));
-		view = glm::translate(view, glm::vec3(0.f, -0.5f, -2.f));
-		proj = glm::perspective(glm::radians(45.f), (float)(WINDOW_WIDTH / WINDOW_HEIGHT), 0.1f, 100.f);
-
-		GLuint modelLoc = glGetUniformLocation(shader.ID, "model");
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		GLuint viewLoc = glGetUniformLocation(shader.ID, "view");
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-		GLuint projLoc = glGetUniformLocation(shader.ID, "proj");
-		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proj));
-
-
-		// Set uniform scale variable
-		glUniform1f(uniScale, 1.f);
 		// Bind the Vertex Array Object so it can be worked with
 		texture.Bind();
 		vao.Bind();
@@ -137,6 +120,9 @@ int main() {
 		glfwSwapBuffers(window);
 
 		glfwPollEvents();
+
+		float deltaTime = glfwGetTime() - frameStartTime; // Calculate delta time
+		std::cout << "deltaTime: " << deltaTime << " seconds with FPS: " << 1/deltaTime << std::endl;
 	}
 
 	// Cleanup
