@@ -8,7 +8,7 @@ Camera::Camera(short width, short height, vec3 position) {
 	this->position = position;
 }
 
-void Camera::Matrix(float FOVdeg, float nearPlane, float farPlane, Shader& shader, const char* uniform) {
+void Camera::UpdateMatrix(float FOVdeg, float nearPlane, float farPlane) {
 	// Initialize view and projection matrices
 	mat4 view = mat4(1.f);
 	mat4 proj = mat4(1.f);
@@ -18,7 +18,11 @@ void Camera::Matrix(float FOVdeg, float nearPlane, float farPlane, Shader& shade
 	// Calculate projection matrix using perspective projection
 	proj = glm::perspective(glm::radians(FOVdeg), (float)(width / height), nearPlane, farPlane);
 
-	glUniformMatrix4fv(glGetUniformLocation(shader.ID, uniform), 1, GL_FALSE, glm::value_ptr(proj * view));
+	cameraMatrix = proj * view;
+}
+
+void Camera::Matrix(Shader& shader, const char* uniform) {
+	glUniformMatrix4fv(glGetUniformLocation(shader.ID, uniform), 1, GL_FALSE, glm::value_ptr(cameraMatrix));
 }
 
 void Camera::HandleInput(GLFWwindow* window) {
@@ -60,7 +64,7 @@ void Camera::HandleInput(GLFWwindow* window) {
 		double mouseX, mouseY;
 		glfwGetCursorPos(window, &mouseX, &mouseY);
 
-		// Calculate the roation based on the mouse position. Center of the screen is (0|0)
+		// Calculate the rotation based on the mouse position. Center of the screen is (0|0)
 		float rotX = sensitivity * (float)(mouseY - (height / 2)) / height;
 		float rotY = sensitivity * (float)(mouseX - (width / 2)) / width;
 

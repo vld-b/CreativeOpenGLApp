@@ -56,6 +56,12 @@
     <None Include="frag.glsl">
       <Filter>Resource Files\Shader</Filter>
     </None>
+    <None Include="lightVert.glsl">
+      <Filter>Resource Files\Shader</Filter>
+    </None>
+    <None Include="lightFrag.glsl">
+      <Filter>Resource Files\Shader</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ShaderClass.h">

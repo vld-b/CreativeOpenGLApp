@@ -17,7 +17,7 @@
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 720
 
-using std::vector;
+using std::vector, glm::vec3, glm::mat4;
 
 GLfloat verts[] = {
 // Vertex Positions			Colors					Texture coords
@@ -35,6 +35,34 @@ GLuint indices[] = {
 	1, 2, 4,
 	2, 3, 4,
 	3, 0, 4
+};
+
+GLfloat lightVertices[] =
+{ //     COORDINATES     //
+	-0.1f, -0.1f,  0.1f,
+	-0.1f, -0.1f, -0.1f,
+	 0.1f, -0.1f, -0.1f,
+	 0.1f, -0.1f,  0.1f,
+	-0.1f,  0.1f,  0.1f,
+	-0.1f,  0.1f, -0.1f,
+	 0.1f,  0.1f, -0.1f,
+	 0.1f,  0.1f,  0.1f
+};
+
+GLuint lightIndices[] =
+{
+	0, 1, 2,
+	0, 2, 3,
+	0, 4, 7,
+	0, 7, 3,
+	3, 7, 6,
+	3, 6, 2,
+	2, 6, 5,
+	2, 5, 1,
+	1, 5, 4,
+	1, 4, 0,
+	4, 5, 6,
+	4, 6, 7
 };
 
 int main() {
@@ -83,8 +111,31 @@ int main() {
 	vbo.Unbind();
 	ebo.Unbind();
 
-	// Get the uniform location for the scale variable
-	GLuint uniScale = glGetUniformLocation(shader.ID, "scale");
+	Shader lightShader("lightVert.glsl", "lightFrag.glsl");
+	VAO lightVAO;
+	lightVAO.Bind();
+
+	VBO lightVBO(lightVertices, sizeof(lightVertices));
+	EBO lightEBO(lightIndices, sizeof(lightIndices));
+
+	lightVAO.LinkAttrib(lightVBO, 0, 3, GL_FLOAT, 3 * sizeof(GLfloat), (void*)0);
+
+	lightVAO.Unbind();
+	lightVBO.Unbind();
+	lightEBO.Unbind();
+
+	vec3 lightPos = vec3(.5f, .5f, .5f); // TODO: shorten initialization
+	mat4 lightModel = mat4(1.f);
+	lightModel = glm::translate(lightModel, lightPos);
+
+	vec3 pyramidPos = vec3(0.f, 0.f, 0.f);
+	mat4 pyramidModel = mat4(1.f);
+	pyramidModel = glm::translate(pyramidModel, pyramidPos);
+
+	lightShader.Activate();
+	glUniformMatrix4fv(glGetUniformLocation(lightShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(lightModel));
+	shader.Activate();
+	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(pyramidModel));
 
 	// Create texture and assign it to the uniform
 	stbi_set_flip_vertically_on_load(true); // Flip the texture vertically
@@ -104,18 +155,24 @@ int main() {
 		// Clear the necessary buffers
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// Use the shader program
-		shader.Activate();
-
 		// Handle the camera
 		camera.HandleInput(window);
-		camera.Matrix(45.f, 0.1f, 100.f, shader, "camMatrix");
+		camera.UpdateMatrix(45.f, 0.1f, 100.f);
+
+		shader.Activate();
+		camera.Matrix(shader, "camMatrix"); // TODO: move camera.Matrix outside of the main loop
 
 		// Bind the Vertex Array Object so it can be worked with
 		texture.Bind();
 		vao.Bind();
 		// Draw the vertices using triangle mode, with the given indices
 		glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
+
+		lightShader.Activate();
+		camera.Matrix(lightShader, "camMatrix");
+		lightVAO.Bind();
+		glDrawElements(GL_TRIANGLES, sizeof(lightIndices) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
+
 		// Swap the buffers to display creation
 		glfwSwapBuffers(window);
 

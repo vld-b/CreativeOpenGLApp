@@ -13,7 +13,7 @@
 
 #include "ShaderClass.h"
 
-using glm::vec3;
+using glm::vec3, glm::mat4;
 
 class Camera {
 public:
@@ -21,6 +21,7 @@ public:
 	vec3 position;
 	vec3 orientation = vec3(0.f, 0.f, -1.f);
 	vec3 up = vec3(0.f, 1.f, 0.f);
+	mat4 cameraMatrix = mat4(1.f);
 
 	// Stores whether the mouse has clicked on frame so that the camera doesn't jump around
 	bool firstClick = true;
@@ -33,7 +34,8 @@ public:
 	Camera(short width, short height, vec3 position);
 
 	// Calculates the Camera's matrix in order to render the scene
-	void Matrix(float FOVdeg, float nearPlane, float farPlane, Shader& shader, const char* uniform);
+	void UpdateMatrix(float FOVdeg, float nearPlane, float farPlane);
+	void Matrix(Shader& shader, const char* uniform);
 	// Handle player input
 	void HandleInput(GLFWwindow* window);
 };
