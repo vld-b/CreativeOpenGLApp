@@ -12,6 +12,7 @@
 #include <glm/gtx/vector_angle.hpp>
 
 #include "ShaderClass.h"
+#include "GameManager.h"
 
 using glm::vec3, glm::mat4;
 
@@ -23,15 +24,17 @@ public:
 	vec3 up = vec3(0.f, 1.f, 0.f);
 	mat4 cameraMatrix = mat4(1.f);
 
+	GameManager* gameManager;
+
 	// Stores whether the mouse has clicked on frame so that the camera doesn't jump around
 	bool firstClick = true;
 
 	short width, height;
 
-	float speed = .1f;
+	float speed = 4.f;
 	float sensitivity = 100.f;
 
-	Camera(short width, short height, vec3 position);
+	Camera(short width, short height, vec3 position, GameManager* gameManager);
 
 	// Calculates the Camera's matrix in order to render the scene
 	void UpdateMatrix(float FOVdeg, float nearPlane, float farPlane);

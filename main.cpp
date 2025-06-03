@@ -13,6 +13,7 @@
 #include "EBO.h"
 #include "Texture.h"
 #include "Camera.h"
+#include "GameManager.h"
 
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 720
@@ -166,15 +167,16 @@ int main() {
 	Texture texture("obama.jpg", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGB, GL_UNSIGNED_BYTE, false);
 	texture.texUnit(shader, "tex", 0);
 
-	Camera camera(WINDOW_WIDTH, WINDOW_HEIGHT, vec3(0.f, 0.f, 2.f));
+	GameManager manager;
+
+	Camera camera(WINDOW_WIDTH, WINDOW_HEIGHT, vec3(0.f, 0.f, 2.f), &manager);
 
 	// Enable the depth buffer
 	glEnable(GL_DEPTH_TEST);
 
-	double deltaTime = 0.f;
 	// Main loop to poll events and
 	while (!glfwWindowShouldClose(window)) {
-		double frameStartTime = glfwGetTime(); // For calculating deltaTime
+		manager.startFrame(glfwGetTime());
 		// Clear the screen and apply new color
 		glClearColor(0.2f, 0.3f, 0.3f, 1.f);
 		// Clear the necessary buffers
@@ -204,8 +206,8 @@ int main() {
 
 		glfwPollEvents();
 
-		deltaTime = glfwGetTime() - frameStartTime; // Calculate delta time
-		std::cout << "deltaTime: " << deltaTime << " seconds with FPS: " << 1/deltaTime << std::endl;
+		manager.endFrame(glfwGetTime());
+		std::cout << "deltaTime: " << manager.deltaTime << " seconds with FPS: " << 1/manager.deltaTime << std::endl;
 	}
 
 	// Cleanup

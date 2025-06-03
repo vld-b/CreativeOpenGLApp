@@ -2,13 +2,15 @@
 
 using glm::mat4;
 
-Camera::Camera(short width, short height, vec3 position) {
+Camera::Camera(short width, short height, vec3 position, GameManager* gameManager) {
 	this->width = width;
 	this->height = height;
 	this->position = position;
+	this->gameManager = gameManager;
 }
 
 void Camera::UpdateMatrix(float FOVdeg, float nearPlane, float farPlane) {
+
 	// Initialize view and projection matrices
 	mat4 view = mat4(1.f);
 	mat4 proj = mat4(1.f);
@@ -28,28 +30,28 @@ void Camera::Matrix(Shader& shader, const char* uniform) {
 void Camera::HandleInput(GLFWwindow* window) {
 	// Handle Player input
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		position += speed * orientation;
+		position += speed * orientation * (float)gameManager->deltaTime;
 	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		position -= speed * glm::normalize(glm::cross(orientation, up));
+		position -= speed * glm::normalize(glm::cross(orientation, up)) * (float)gameManager->deltaTime;
 	}
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		position -= speed * orientation;
+		position -= speed * orientation * (float)gameManager->deltaTime;
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		position += speed * glm::normalize(glm::cross(orientation, up));
+		position += speed * glm::normalize(glm::cross(orientation, up)) * (float)gameManager->deltaTime;
 	}
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-		position += speed * up;
+		position += speed * up * (float)gameManager->deltaTime;
 	}
 	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-		position -= speed * up;
+		position -= speed * up * (float)gameManager->deltaTime;
 	}
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-		speed = .2f;
+		speed = 8.f;
 	}
 	else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE) {
-		speed = .1f;
+		speed = 4.f;
 	}
 
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
