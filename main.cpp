@@ -94,7 +94,8 @@ int main() {
 
 
 	// Create GLFW Window and add to current context
-	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Goodbye OpenGL", NULL, NULL);
+	const GLFWvidmode* mainMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+	GLFWwindow* window = glfwCreateWindow(mainMode->width, mainMode->height, "Goodbye OpenGL", glfwGetPrimaryMonitor(), NULL);
 	if (window == NULL) {
 		std::cerr << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
@@ -107,7 +108,7 @@ int main() {
 	gladLoadGL();
 
 	// Set OpenGL Viewport
-	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+	glViewport(0, 0, mainMode->width, mainMode->height);
 
 	// Create the shader program and compile the shaders
 	Shader shader("vert.glsl", "frag.glsl");
@@ -172,7 +173,7 @@ int main() {
 
 	// Main loop to poll events and
 	while (!glfwWindowShouldClose(window)) {
-		float frameStartTime = glfwGetTime(); // For calculating deltaTime
+		double frameStartTime = glfwGetTime(); // For calculating deltaTime
 		// Clear the screen and apply new color
 		glClearColor(0.2f, 0.3f, 0.3f, 1.f);
 		// Clear the necessary buffers
@@ -201,7 +202,7 @@ int main() {
 
 		glfwPollEvents();
 
-		float deltaTime = glfwGetTime() - frameStartTime; // Calculate delta time
+		double deltaTime = glfwGetTime() - frameStartTime; // Calculate delta time
 		std::cout << "deltaTime: " << deltaTime << " seconds with FPS: " << 1/deltaTime << std::endl;
 	}
 
