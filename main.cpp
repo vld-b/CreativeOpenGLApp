@@ -171,6 +171,7 @@ int main() {
 	// Enable the depth buffer
 	glEnable(GL_DEPTH_TEST);
 
+	double deltaTime = 0.f;
 	// Main loop to poll events and
 	while (!glfwWindowShouldClose(window)) {
 		double frameStartTime = glfwGetTime(); // For calculating deltaTime
@@ -184,6 +185,7 @@ int main() {
 		camera.UpdateMatrix(45.f, 0.1f, 100.f);
 
 		shader.Activate();
+		glUniform3f(glGetUniformLocation(shader.ID, "camPos"), camera.position.x, camera.position.y, camera.position.z);
 		camera.Matrix(shader, "camMatrix"); // TODO: move camera.Matrix outside of the main loop
 
 		// Bind the Vertex Array Object so it can be worked with
@@ -202,7 +204,7 @@ int main() {
 
 		glfwPollEvents();
 
-		double deltaTime = glfwGetTime() - frameStartTime; // Calculate delta time
+		deltaTime = glfwGetTime() - frameStartTime; // Calculate delta time
 		std::cout << "deltaTime: " << deltaTime << " seconds with FPS: " << 1/deltaTime << std::endl;
 	}
 
