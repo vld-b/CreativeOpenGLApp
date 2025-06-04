@@ -15,9 +15,6 @@
 #include "Camera.h"
 #include "GameManager.h"
 
-#define WINDOW_WIDTH 1280
-#define WINDOW_HEIGHT 720
-
 using std::vector, glm::vec3, glm::vec4, glm::mat4;
 
 GLfloat verts[] =
@@ -87,15 +84,18 @@ int main() {
 	// Initialize GLFW
 	glfwInit();
 
+	// Create GLFW Window and add to current context
+	const GLFWvidmode* mainMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+
 	// Configure GLFW Window
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+	glfwWindowHint(GLFW_RED_BITS, mainMode->redBits);
+	glfwWindowHint(GLFW_GREEN_BITS, mainMode->greenBits);
+	glfwWindowHint(GLFW_BLUE_BITS, mainMode->blueBits);
 
-
-	// Create GLFW Window and add to current context
-	const GLFWvidmode* mainMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 	GLFWwindow* window = glfwCreateWindow(mainMode->width, mainMode->height, "Goodbye OpenGL", glfwGetPrimaryMonitor(), NULL);
 	if (window == NULL) {
 		std::cerr << "Failed to create GLFW window" << std::endl;
@@ -104,6 +104,9 @@ int main() {
 	}
 	// Display the window by making it the current context
 	glfwMakeContextCurrent(window);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPos(window, mainMode->width / 2, mainMode->height / 2);
+
 
 	// Load OpenGL function pointers using GLAD
 	gladLoadGL();
@@ -169,7 +172,7 @@ int main() {
 
 	GameManager manager;
 
-	Camera camera(WINDOW_WIDTH, WINDOW_HEIGHT, vec3(0.f, 0.f, 2.f), &manager);
+	Camera camera(mainMode->width, mainMode->height, vec3(0.f, 0.f, 2.f), &manager);
 
 	// Enable the depth buffer
 	glEnable(GL_DEPTH_TEST);

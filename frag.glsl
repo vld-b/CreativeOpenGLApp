@@ -25,7 +25,7 @@ void main()
 	float specularStrength = .5f;
 	vec3 viewDir = normalize(camPos - currentPos);
 	vec3 reflectDir = reflect(-lightDir, Normal);
-	float specAmount = pow(max(dot(viewDir, reflectDir), 0.f), 8);
+	float specAmount = pow(max(dot(viewDir, reflectDir), 0.f), 12);
 	float specular = specularStrength * specAmount;
 
 	FragColor = texture(tex, texCoord) * lightColor * (diffuse + ambient + specular);

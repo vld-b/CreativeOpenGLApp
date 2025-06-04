@@ -30,9 +30,10 @@ public:
 	bool firstClick = true;
 
 	short width, height;
+	float aspectRatio;
 
 	float speed = 4.f;
-	float sensitivity = 100.f;
+	float sensitivity = 175.f;
 
 	Camera(short width, short height, vec3 position, GameManager* gameManager);
 
